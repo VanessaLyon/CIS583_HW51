@@ -38,8 +38,7 @@ contract AMM is AccessControl {
         ERC20(tokenA).safeTransferFrom(msg.sender, address(this), amtA);
         ERC20(tokenB).safeTransferFrom(msg.sender, address(this), amtB);
 
-        // Calculate liquidity tokens to mint - simplistic model, for illustration only
-        // In a real scenario, this should take into account the total supply and pool shares
+        
         uint256 liquidityTokens = amtA + amtB; // Simplified calculation
         liquidity[msg.sender] += liquidityTokens;
 
@@ -75,7 +74,7 @@ contract AMM is AccessControl {
     require(hasRole(LP_ROLE, msg.sender), "Unauthorized");
 
     uint256 liquidityBalance = liquidity[msg.sender];
-    // Simplified check for demonstration. In a real scenario, you should calculate the share of the pool the LP is entitled to.
+    // Checks
     require(
         (amtA == 0 || ERC20(tokenA).balanceOf(address(this)) >= amtA) &&
         (amtB == 0 || ERC20(tokenB).balanceOf(address(this)) >= amtB),
@@ -89,8 +88,7 @@ contract AMM is AccessControl {
         ERC20(tokenB).safeTransfer(recipient, amtB);
     }
 
-    // Update the liquidity record for the LP. This is a simplified version.
-    // The actual implementation would need to calculate the LP's share being withdrawn and reduce liquidity tokens accordingly.
+    // Update the liquidity record for the LP. 
     if (amtA > 0 && amtB > 0) {
         // Assuming a 1:1 ratio for simplicity. Adjust based on actual pool share.
         liquidity[msg.sender] -= (amtA + amtB);
