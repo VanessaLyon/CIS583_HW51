@@ -48,7 +48,25 @@ contract AMM is AccessControl {
         emit LiquidityProvision(msg.sender, amtA, amtB);
     }
 
-    function withdrawLiquidity(address recipient, uint256 amtA, uint256 amtB) public {
+    function withdrawLiquidity2(address recipient, uint256 amtA, uint256 amtB) public onlyRole(LP_ROLE) {
+        require(amtA > 0 && amtB > 0, 'Cannot withdraw 0');
+        require(recipient != address(0), 'Cannot withdraw to 0 address');
+
+        // Ensure the caller has enough liquidity tokens - simplified model
+        require(liquidity[msg.sender] >= amtA + amtB, "Insufficient liquidity");
+
+        ERC20(tokenA).safeTransfer(recipient, amtA);
+        ERC20(tokenB).safeTransfer(recipient, amtB);
+
+        // Burn liquidity tokens - simplified model
+        liquidity[msg.sender] -= (amtA + amtB);
+
+        updateInvariant();
+
+        emit Withdrawal(msg.sender, recipient, amtA, amtB);
+    }
+
+  function withdrawLiquidity(address recipient, uint256 amtA, uint256 amtB) public {
     // Check for non-zero withdrawal request
     require(amtA > 0 || amtB > 0, 'Cannot withdraw 0');
     require(recipient != address(0), 'Cannot withdraw to 0 address');
@@ -85,7 +103,8 @@ contract AMM is AccessControl {
     updateInvariant();
 
     emit Withdrawal(msg.sender, recipient, amtA, amtB);
-}
+  }
+
 
     function tradeTokens(address sellToken, uint256 sellAmount) public {
         require(invariant > 0, 'Invariant must be nonzero');
@@ -123,5 +142,3 @@ contract AMM is AccessControl {
         return buyTokenBalance - newBuyTokenBalance;
     }
 }
-
-
